@@ -1,0 +1,202 @@
+# For the ZNP Robin Nano DW v2.1 board:
+#   - Compile with the processor model STM32F401.
+#   - Select the 32KiB bootloader,
+#   - Select (Serial (on # USART1 PA10/PA9) for the communication interface.
+# Note that the "make flash" command does not work with ZNP Robin boards. After running "make", run the following command:
+# cp out/klipper.bin out/ZNP_ROBIN_NANO.bin
+#
+# Copy the file out/ZNP_ROBIN_NANO.bin to an SD card and then restart the printer with that SD card.
+# See docs/Config_Reference.md for a description of parameters.
+
+#[include /home/pi/klipper_config/mainsail.cfg]
+#[include /home/pi/klipper_config/adxl.cfg]
+
+[mcu]
+serial: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+restart_method: command
+
+[printer]
+kinematics: cartesian
+max_velocity: 300
+max_accel: 3000
+max_z_velocity: 5
+max_z_accel: 100
+# Use those higher values just to configure Input Shaper 
+#max_accel: 10000
+#max_accel_to_decel: 10000
+
+[stepper_x]
+step_pin: !PC12
+dir_pin: PB3
+enable_pin: !PD2
+microsteps: 16
+rotation_distance: 40
+endstop_pin: PA13
+position_endstop: 0
+position_max: 235
+homing_speed: 50
+
+[stepper_y]
+step_pin: PC11
+dir_pin: PA15
+enable_pin: !PC10
+microsteps: 16
+rotation_distance: 40
+endstop_pin: PB8
+position_endstop: 0
+position_max: 235
+homing_speed: 50
+
+[stepper_z]
+step_pin: PC7
+dir_pin: !PC9
+enable_pin: !PC8
+rotation_distance: 8
+microsteps: 16
+# If using the "PC14" sensor, use the UI and the piece of paper to slowly go down and find the proper position
+#endstop_pin: !PC14
+#position_endstop = 6
+position_min: -1
+position_max: 280
+homing_retract_dist: 3.0
+# If you want to use "z_virtual_endstop", please use "homing_speed" and "second_homing_speed" to avoid banging the nozzle to fast
+endstop_pin: probe:z_virtual_endstop
+homing_speed: 0.5
+second_homing_speed: 0.1
+
+[extruder]
+max_extrude_only_distance: 100.0
+step_pin: PB10
+dir_pin: PB1
+enable_pin: !PC6
+microsteps: 16
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PA6
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC1
+min_temp: 0
+max_temp: 250
+# Calibrate E-Steps https://www.klipper3d.org/Rotation_Distance.html#calibrating-rotation_distance-on-extruders
+rotation_distance: 22.219
+# Calibrate PID: https://www.klipper3d.org/Config_checks.html#calibrate-pid-settings
+#  - Example: PID_CALIBRATE HEATER=extruder TARGET=200
+#control = pid 
+#pid_kp = 30.655
+#pid_ki = 1.910
+#pid_kd = 123.001
+# Calibrate PA: https://www.klipper3d.org/Pressure_Advance.html
+#pressure_advance = 0.600
+
+[heater_bed]
+heater_pin: PA5
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC0
+max_temp: 110
+min_temp: 0
+# Calibrate PID: https://www.klipper3d.org/Config_checks.html#calibrate-pid-settings
+#  - Example: PID_CALIBRATE HEATER=heater_bed TARGET=60
+#control = pid
+#pid_kp = 65.450
+#pid_ki = 0.819
+#pid_kd = 1308.191
+
+[heater_fan hotend_fan]
+pin: PA7
+heater: extruder
+heater_temp: 50.0
+
+[fan]
+pin: PB0
+
+[force_move]
+enable_force_move: True
+
+[safe_z_home]
+home_xy_position: 110,110
+z_hop: 10
+
+[probe]
+pin: !PC13
+speed: 0.2
+lift_speed: 0.6
+samples_tolerance: 0.10
+samples_tolerance_retries: 2
+samples: 3
+samples_result: median
+# Calibrate probe: https://www.klipper3d.org/Bed_Level.html
+# - Example: PROBE_CALIBRATE, then adjust with TESTZ Z=+/-X
+#z_offset = 0.120
+
+[filament_motion_sensor filament_sensor]
+extruder: extruder
+pause_on_runout: true
+switch_pin: PB4
+
+[bed_mesh]
+speed: 100
+horizontal_move_z: 3
+mesh_min: 20,20
+mesh_max: 200,200
+probe_count: 5,5
+algorithm: bicubic
+#bicubic_tension: 0.15
+#fade_start: 1
+#fade_end: 50
+#fade_target: 0
+#relative_reference_index: 6
+#mesh_pps: 1
+
+[input_shaper]
+# Calibrate IS: https://www.klipper3d.org/Resonance_Compensation.html
+#shaper_type_x = ei
+#shaper_freq_x = 81.6
+#shaper_type_y = mzv
+#shaper_freq_y = 38.8
+
+#[temperature_sensor raspberry_pi]
+#sensor_type: temperature_host
+#min_temp: 10
+#max_temp: 105
+
+[temperature_sensor mcu_temp]
+sensor_type: temperature_mcu
+sensor_temperature1: 25
+sensor_adc1: 0.210317
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [extruder]
+#*# control = pid
+#*# pid_kp = 29.009
+#*# pid_ki = 1.774
+#*# pid_kd = 118.576
+#*#
+#*# [heater_bed]
+#*# control = pid
+#*# pid_kp = 65.780
+#*# pid_ki = 0.649
+#*# pid_kd = 1667.520
+#*#
+#*# [probe]
+#*# z_offset = -0.230
+#*#
+#*# [bed_mesh default]
+#*# version = 1
+#*# points =
+#*# 	-0.535000, -0.520000, -0.495000, -0.465000, -0.495000
+#*# 	-0.510000, -0.480000, -0.470000, -0.407500, -0.395000
+#*# 	-0.387500, -0.402500, -0.412500, -0.345000, -0.347500
+#*# 	-0.207500, -0.320000, -0.347500, -0.355000, -0.372500
+#*# 	-0.132500, -0.220000, -0.367500, -0.387500, -0.490000
+#*# tension = 0.2
+#*# min_x = 20.0
+#*# algo = bicubic
+#*# y_count = 5
+#*# mesh_y_pps = 2
+#*# min_y = 20.0
+#*# x_count = 5
+#*# max_y = 200.0
+#*# mesh_x_pps = 2
+#*# max_x = 200.0
